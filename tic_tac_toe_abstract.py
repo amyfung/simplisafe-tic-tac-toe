@@ -227,6 +227,15 @@ class TicTacToeAbstract(ABC):
         # return not self._valid_moves
         return (self._o_count + self._x_count) < self._size ** 2
     
+    def _pass_turn(self):
+        """
+        Pass the current player's turn.
+        This method is intended for testing purposes only.
+        """
+        self._current_player = (
+            Player.O if self._current_player == Player.X else Player.X
+        )
+
     # ==========================================================================
     # Checking winning
     # ==========================================================================
@@ -257,7 +266,7 @@ class TicTacToeAbstract(ABC):
         if sum(self._board[i][col] == player for i in range(self._size)) == self._size:
             return True
 
-    # Check diagonals
+        # Check diagonals
         if row == col or row + col == self._size - 1:
             main_diag = sum(self._board[i][i] == player for i in range(self._size))
             anti_diag = sum(self._board[i][self._size-1-i] == player for i in range(self._size))
@@ -330,16 +339,6 @@ class TicTacToeAbstract(ABC):
 
         Returns:
             List[Tuple[int, int]]: The remaining valid moves.
-        """
-        return list(self._empty_cells)
-    
-    @property
-    def valid_moves(self) -> List[Tuple[int, int]]:
-        """
-        Get a list of all valid moves (empty cells) on the board.
-
-        Returns:
-            List[Tuple[int, int]]: A list of (row, col) tuples representing valid moves.
         """
         return list(self._empty_cells)
     

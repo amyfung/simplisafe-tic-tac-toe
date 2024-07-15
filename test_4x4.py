@@ -260,6 +260,58 @@ class TestTicTacToe4x4(unittest.TestCase):
         )
     
     # ==========================================================================
+    # Winning tests
+    # ==========================================================================
+    def test_win_conditions(self):
+        """Test all winning conditions."""
+        print("Testing winning conditions")
+        win_conditions = [
+            # Rows
+            [(0, 0), (0, 1), (0, 2), (0, 3)],
+            [(1, 0), (1, 1), (1, 2), (1, 3)],
+            [(2, 0), (2, 1), (2, 2), (2, 3)],
+            [(3, 0), (3, 1), (3, 2), (3, 3)],
+            # Columns
+            [(0, 0), (1, 0), (2, 0), (3, 0)],
+            [(0, 1), (1, 1), (2, 1), (3, 1)],
+            [(0, 2), (1, 2), (2, 2), (3, 2)],
+            [(0, 3), (1, 3), (2, 3), (3, 3)],
+            # Diagonals
+            [(0, 0), (1, 1), (2, 2), (3, 3)],
+            [(0, 3), (1, 2), (2, 1), (3, 0)],
+            # Corners
+            [(0, 0), (0, 3), (3, 0), (3, 3)],
+            # 2x2 boxes
+            [(0, 0), (0, 1), (1, 0), (1, 1)],
+            [(1, 1), (1, 2), (2, 1), (2, 2)],
+            [(2, 2), (2, 3), (3, 2), (3, 3)],
+        ]
+
+        for i, condition in enumerate(win_conditions):
+            # with self.subTest(f"Win condition {i}: {condition}"):
+            #print(condition)
+            self.game.reset()
+            self._play_moves(condition, alternate=False)
+            self.assertEqual(
+                self.game.winner,
+                Player.X,
+                f"Attribute self.game._winner -> Player X with moves {condition}",
+            )
+            self.assertEqual(
+                self.game.check_winner(),
+                Player.X,
+                f"check_winner() -> Player X wins with moves {condition}",
+            )
+            self.assertTrue(
+                self.game.is_game_over(),
+                f"Game should be over with winning moves {condition}",
+            )
+            self.assertEqual(
+                self.game.get_game_state(),
+                GameState.X_WINS,
+                f"Game state should be X_WINS with moves {condition}",
+            )
+    # ==========================================================================
     # Helper methods
     # ==========================================================================
     def _play_moves(self, moves: List[Tuple[int, int]], alternate: bool) -> None:
@@ -268,6 +320,7 @@ class TestTicTacToe4x4(unittest.TestCase):
             self.game.make_move(row, col)
             if not alternate:
                 self.game._pass_turn()
+            self.game.print_board()
 
 
 if __name__ == "__main__":
