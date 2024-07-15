@@ -44,6 +44,8 @@ class TicTacToeAbstract(ABC):
         self._size = size
         self._board: List[List[str]]
         self._empty_cells: Set[Tuple[int, int]]
+        self._x_count: int
+        self._o_count: int
         self._winner: Optional[Player] = None
 
         if not initial_state:
@@ -55,13 +57,24 @@ class TicTacToeAbstract(ABC):
             self._initialize_from_state(initial_state, current_player)
 
     def _initialize_new_board(self) -> None:
+        """
+        Initialize a new empty game board of the specified size, as well as the
+        set of empty cells and the move counts for both players.
+        """
         self._board = [[''] * self._size for _ in range(self._size)]
-        print("board:", self._board)
-        self._x_count: int = 0
-        self._o_count: int = 0
+        self._x_count= self._o_count = 0
         self._empty_cells = {(r, c) for r in range(self._size) for c in range(self._size)}
 
     def _initialize_from_state(self, initial_state: List[List[str]], current_player: Optional[Player]) -> None:
+        """
+        Initialize the game board from a given initial state.
+
+        This method sets up the board based on the provided initial state,
+        validates the state, and initializes game counters and the current player.
+
+        Raises:
+            ValueError: If the initial board state is invalid.
+        """
         if not self._is_valid_board(initial_state):
             raise ValueError("Invalid initial board state")
 
@@ -160,7 +173,7 @@ class TicTacToeAbstract(ABC):
         )
         return True
 
-    def is_valid_move(self, row: int, col: int) -> bool:
+    def _is_valid_move(self, row: int, col: int) -> bool:
         """
         Check if a move is valid (i.e., the cell is empty).
 

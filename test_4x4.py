@@ -7,6 +7,9 @@ class TestTicTacToe4x4(unittest.TestCase):
     def setUp(self):
         self.game = TicTacToe4x4()
 
+    # ==========================================================================
+    # Initialization tests
+    # ==========================================================================
     def test_initialization(self):
         """Test the initialization of the game."""
         self.assertEqual(self.game.size, 4, "Board size should be 4x4")
@@ -76,7 +79,6 @@ class TestTicTacToe4x4(unittest.TestCase):
             with self.assertRaises(ValueError, msg=f"Should raise ValueError for invalid state: {state}"):
                 TicTacToe4x4(initial_state=state)
 
-    
     def test_x_and_o_count_with_initial_state(self):
         """Test that _x_count and _o_count are accurate when initializing with a board state."""
         initial_states = [
@@ -104,6 +106,42 @@ class TestTicTacToe4x4(unittest.TestCase):
             game = TicTacToe4x4(initial_state=board)
             self.assertEqual(game._x_count, expected_x_count, f"X count should be {expected_x_count} for given board")
             self.assertEqual(game._o_count, expected_o_count, f"O count should be {expected_o_count} for given board")
-
+    
+    # ==========================================================================
+    # Making moves tests
+    # ==========================================================================
+    def test_make_move(self):
+        """Test making valid and invalid moves."""
+        print("Testing making valid and invalid moves")
+        self.assertTrue(
+            self.game.make_move(0, 0), "Should be able to make a move on an empty cell"
+        )
+        self.assertEqual(
+            self.game.current_player, Player.O, "Player should change after a move"
+        )
+        self.assertFalse(
+            self.game.make_move(0, 0), "Should not be able to move on an occupied cell"
+        )
+        self.assertFalse(
+            self.game.make_move(-1, 0),
+            "Should not be able to move outside the board (negative)",
+        )
+        self.assertFalse(
+            self.game.make_move(0, 4),
+            "Should not be able to move outside the board (too large)",
+        )
+        
+    def test_get_valid_moves(self):
+        """Test getting valid moves."""
+        print("Testing getting valid moves")
+        self.game.make_move(0, 0)
+        valid_moves = self.game.valid_moves
+        self.assertEqual(
+            len(valid_moves), 15, "Should have 15 valid moves after one move"
+        )
+        self.assertNotIn(
+            (0, 0), valid_moves, "The occupied cell should not be in valid moves"
+        )
+        
 if __name__ == "__main__":
     unittest.main()
