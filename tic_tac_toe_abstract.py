@@ -249,6 +249,12 @@ class TicTacToeAbstract(ABC):
 
     @property
     def valid_moves(self) -> List[Tuple[int, int]]:
+        """
+        Get the valid moves left in the game.
+
+        Returns:
+            List[Tuple[int, int]]: The remaining valid moves.
+        """
         return list(self._empty_cells)
     
     @property
@@ -277,6 +283,9 @@ class TicTacToeAbstract(ABC):
         """
         return list(self._empty_cells)
 
+    # ==========================================================================
+    # Displaying board
+    # ==========================================================================
 
     def __str__(self) -> str:
         """
