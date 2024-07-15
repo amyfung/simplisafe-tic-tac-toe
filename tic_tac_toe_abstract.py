@@ -136,7 +136,7 @@ class TicTacToeAbstract(ABC):
         player to X.
         """
         self._initialize_new_board()
-        self.current_player = Player.X
+        self._current_player = Player.X
         self._winner = None
         self._x_count = self._o_count = 0
 
@@ -289,22 +289,6 @@ class TicTacToeAbstract(ABC):
         return list(self._empty_cells)
     
     @property
-    def game_state(self) -> GameState:
-        """
-        Get the current state of the game.
-
-        Returns:
-            GameState: The current state of the game (X_WINS, O_WINS, DRAW, or ONGOING).
-        """
-        if self._winner == Player.X:
-            return GameState.X_WINS
-        elif self._winner == Player.O:
-            return GameState.O_WINS
-        elif not self._empty_cells:
-            return GameState.DRAW
-        return GameState.ONGOING
-
-    @property
     def valid_moves(self) -> List[Tuple[int, int]]:
         """
         Get a list of all valid moves (empty cells) on the board.
@@ -313,6 +297,16 @@ class TicTacToeAbstract(ABC):
             List[Tuple[int, int]]: A list of (row, col) tuples representing valid moves.
         """
         return list(self._empty_cells)
+    
+    @property
+    def winner(self) -> Optional[Player]:
+        """
+        Get the winner of the game.
+
+        Returns:
+            Optional[Player]: The winner (Player.X or Player.O) or None if there is no winner yet.
+        """
+        return self._winner
 
     # ==========================================================================
     # Displaying board
