@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Set
 from enums import Player, GameState
 
+
 class TicTacToeAbstract(ABC):
     """
     An abstract base class representing a Tic-Tac-Toe game board.
@@ -32,14 +33,19 @@ class TicTacToeAbstract(ABC):
         is_winning_move(row: int, col: int) -> bool
         check_winner() -> Optional[Player]
     """
-    
+
     # ==========================================================================
     # Initializing the board
     # ==========================================================================
-    def __init__(self, size: int, initial_state: Optional[List[List[str]]] = None, current_player: Optional[Player] = None):
+    def __init__(
+        self,
+        size: int,
+        initial_state: Optional[List[List[str]]] = None,
+        current_player: Optional[Player] = None,
+    ):
         if size < 3:
             raise ValueError("Board size must be at least 3x3")
-        
+
         self._size = size
         self._board: List[List[str]]
         self._empty_cells: Set[Tuple[int, int]]
@@ -60,11 +66,15 @@ class TicTacToeAbstract(ABC):
         Initialize a new empty game board of the specified size, as well as the
         set of empty cells and the move counts for both players.
         """
-        self._board = [[''] * self._size for _ in range(self._size)]
-        self._x_count= self._o_count = 0
-        self._empty_cells = {(r, c) for r in range(self._size) for c in range(self._size)}
+        self._board = [[""] * self._size for _ in range(self._size)]
+        self._x_count = self._o_count = 0
+        self._empty_cells = {
+            (r, c) for r in range(self._size) for c in range(self._size)
+        }
 
-    def _initialize_from_state(self, initial_state: List[List[str]], current_player: Optional[Player]) -> None:
+    def _initialize_from_state(
+        self, initial_state: List[List[str]], current_player: Optional[Player]
+    ) -> None:
         """
         Initialize the game board from a given initial state.
 
@@ -78,19 +88,28 @@ class TicTacToeAbstract(ABC):
             raise ValueError("Invalid initial board state")
 
         self._board = initial_state
-        self._empty_cells = {(r, c) for r in range(self._size) for c in range(self._size) if not initial_state[r][c]}
+        self._empty_cells = {
+            (r, c)
+            for r in range(self._size)
+            for c in range(self._size)
+            if not initial_state[r][c]
+        }
         self._x_count, self._o_count = self._count_moves(self._board)
-        
+
         if current_player is None:
-            self._current_player = Player.X if self._x_count <= self._o_count else Player.O
-        elif (current_player == Player.X and self._x_count > self._o_count) or \
-             (current_player == Player.O and self._o_count > self._x_count):
-            raise ValueError("Provided current player is inconsistent with the board state")
+            self._current_player = (
+                Player.X if self._x_count <= self._o_count else Player.O
+            )
+        elif (current_player == Player.X and self._x_count > self._o_count) or (
+            current_player == Player.O and self._o_count > self._x_count
+        ):
+            raise ValueError(
+                "Provided current player is inconsistent with the board state"
+            )
         else:
             self._current_player = current_player
 
         self._winner = self.check_winner()
-
 
     def _is_valid_board(self, state) -> bool:
         """
@@ -131,7 +150,7 @@ class TicTacToeAbstract(ABC):
         """
         Reset the game board to have all empty cells.
 
-        This method clears the board, resets all counters, and sets the current 
+        This method clears the board, resets all counters, and sets the current
         player to X.
         """
         self._initialize_new_board()
@@ -158,7 +177,7 @@ class TicTacToeAbstract(ABC):
 
         self._board[row][col] = self._current_player.value
         self._empty_cells.remove((row, col))
-        
+
         if self._current_player == Player.X:
             self._x_count += 1
         else:
@@ -183,12 +202,20 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if the move is valid, False otherwise.
         """
-        return ((row, col) in self._empty_cells)
+        return (row, col) in self._empty_cells
+
+    def _pass_turn(self):
+        """
+        Pass the current player's turn.
+        This method is intended for testing purposes only.
+        """
+        self._current_player = (
+            Player.O if self._current_player == Player.X else Player.X
+        )
 
     # ==========================================================================
     # Solver methods that check the game state
     # ==========================================================================
-    
     def is_game_over(self) -> bool:
         """
         Check whether the game is over.
@@ -223,25 +250,15 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if there are moves left, False otherwise.
         """
-        # return not self._valid_moves
-        return (self._o_count + self._x_count) < self._size ** 2
+        return not self._valid_moves
     
-    def _pass_turn(self):
-        """
-        Pass the current player's turn.
-        This method is intended for testing purposes only.
-        """
-        self._current_player = (
-            Player.O if self._current_player == Player.X else Player.X
-        )
-
     # ==========================================================================
     # Checking winning
     # ==========================================================================
     @abstractmethod
     def is_winning_move(self, row: int, col: int) -> bool:
         """
-        Check whether the last move resulted in a win. Additional winning 
+        Check whether the last move resulted in a win. Additional winning
         conditions should be implemented by subclasses, if applicable.
 
         Args:
@@ -253,7 +270,7 @@ class TicTacToeAbstract(ABC):
         """
         # Too few moves on the board to meet any win condition
         if self._o_count < self._size and self._x_count < self._size:
-            return None
+            return False
 
         player = self._current_player.value
 
@@ -268,7 +285,9 @@ class TicTacToeAbstract(ABC):
         # Check diagonals
         if row == col or row + col == self._size - 1:
             main_diag = sum(self._board[i][i] == player for i in range(self._size))
-            anti_diag = sum(self._board[i][self._size-1-i] == player for i in range(self._size))
+            anti_diag = sum(
+                self._board[i][self._size - 1 - i] == player for i in range(self._size)
+            )
             if main_diag == self._size or anti_diag == self._size:
                 return True
 
@@ -280,8 +299,8 @@ class TicTacToeAbstract(ABC):
         Checks whether there is a winner of the tic-tac-toe game based on the
         horizontal, vertical, and diagonal win conditions. Returns the winner,
         if any, or None.
-        
-        Additional winning conditions should be implemented by subclasses, 
+
+        Additional winning conditions should be implemented by subclasses,
         if applicable.
 
         Returns:
@@ -295,19 +314,28 @@ class TicTacToeAbstract(ABC):
 
         # Check rows and columns simultaneously
         for i in range(self._size):
-            if self._board[i][0] and all(self._board[i][j] == self._board[i][0] for j in range(1, self._size)):
+            if self._board[i][0] and all(
+                self._board[i][j] == self._board[i][0] for j in range(1, self._size)
+            ):
                 return Player(self._board[i][0])
-            if self._board[0][i] and all(self._board[j][i] == self._board[0][i] for j in range(1, self._size)):
+            if self._board[0][i] and all(
+                self._board[j][i] == self._board[0][i] for j in range(1, self._size)
+            ):
                 return Player(self._board[0][i])
 
         # Check diagonals
-        if self._board[0][0] and all(self._board[i][i] == self._board[0][0] for i in range(1, self._size)):
+        if self._board[0][0] and all(
+            self._board[i][i] == self._board[0][0] for i in range(1, self._size)
+        ):
             return Player(self._board[0][0])
-        if self._board[0][self._size-1] and all(self._board[i][self._size-1-i] == self._board[0][self._size-1] for i in range(1, self._size)):
-            return Player(self._board[0][self._size-1])
+        if self._board[0][self._size - 1] and all(
+            self._board[i][self._size - 1 - i] == self._board[0][self._size - 1]
+            for i in range(1, self._size)
+        ):
+            return Player(self._board[0][self._size - 1])
 
         return None
-    
+
     # ==========================================================================
     # Properties
     # ==========================================================================
@@ -320,7 +348,7 @@ class TicTacToeAbstract(ABC):
             int: The size of the board.
         """
         return self._size
-    
+
     @property
     def current_player(self) -> Player:
         """
@@ -330,7 +358,7 @@ class TicTacToeAbstract(ABC):
             Player: The current player (Player.X or Player.O).
         """
         return self._current_player
-    
+
     @property
     def valid_moves(self) -> List[Tuple[int, int]]:
         """
@@ -340,21 +368,21 @@ class TicTacToeAbstract(ABC):
             List[Tuple[int, int]]: The remaining valid moves.
         """
         return list(self._empty_cells)
-    
+
     @property
     def winner(self) -> Optional[Player]:
         """
         Get the winner of the game.
 
         Returns:
-            Optional[Player]: The winner (Player.X or Player.O) or None if there is no winner yet.
+            Optional[Player]: The winner (Player.X or Player.O) or None if there 
+                is no winner yet.
         """
         return self._winner
 
     # ==========================================================================
     # Displaying board
     # ==========================================================================
-
     def __str__(self) -> str:
         """
         Get a string representation of the current board state.
@@ -362,7 +390,10 @@ class TicTacToeAbstract(ABC):
         Returns:
             str: A string representation of the board.
         """
-        return "\n".join("|" + "|".join(cell if cell else "_" for cell in row) + "|" for row in self._board)
+        return "\n".join(
+            "|" + "|".join(cell if cell else "_" for cell in row) + "|"
+            for row in self._board
+        )
 
     def print_board(self) -> None:
         """
