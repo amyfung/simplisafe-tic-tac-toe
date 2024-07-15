@@ -132,5 +132,6 @@ Player move counts are stored in the game board class rather than in separate pl
 4. Add network play functionality for remote multiplayer games.
 5. Further refactor the code to improve modularity and reduce redundancy, particularly in the win-checking logic.
 6. Add the ability to save and load game states.
-7. Add to this README!
+7. Add additional tests
+8. Add to this README!
 
