@@ -219,7 +219,7 @@ class TicTacToeAbstract(ABC):
         Check whether there are any moves left.
 
         Args:
-            board (AbstractBoard): The game board.
+            board (TicTacToeAbstract): The game board.
 
         Returns:
             bool: True if there are moves left, False otherwise.
@@ -231,9 +231,10 @@ class TicTacToeAbstract(ABC):
     # Checking winning
     # ==========================================================================
     @abstractmethod
-    def is_winning_move(self, row: int, col: int):
+    def is_winning_move(self, row: int, col: int) -> bool:
         """
-        Check whether the last move resulted in a win.
+        Check whether the last move resulted in a win. Additional winning 
+        conditions should be implemented by subclasses, if applicable.
 
         Args:
             row (int): The row index for the move.
@@ -242,7 +243,28 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if the move resulted in a win or False otherwise.
         """
-        
+        # Too few moves on the board to meet any win condition
+        if self._o_count < self._size and self._x_count < self._size:
+            return None
+
+        player = self._current_player.value
+
+        # Check row
+        if all(self._board[row][i] == player for i in range(self.size)):
+            return True
+
+        # Check column
+        if sum(self._board[i][col] == player for i in range(self._size)) == self._size:
+            return True
+
+    # Check diagonals
+        if row == col or row + col == self._size - 1:
+            main_diag = sum(self._board[i][i] == player for i in range(self._size))
+            anti_diag = sum(self._board[i][self._size-1-i] == player for i in range(self._size))
+            if main_diag == self._size or anti_diag == self._size:
+                return True
+
+        return False
 
     @abstractmethod
     def check_winner(self) -> Optional[Player]:
@@ -251,9 +273,32 @@ class TicTacToeAbstract(ABC):
         horizontal, vertical, and diagonal win conditions. Returns the winner,
         if any, or None.
         
+        Additional winning conditions should be implemented by subclasses, 
+        if applicable.
+
         Returns:
-            Optional[str]: The winner ('X' or 'O') or None if there is no winner.
+            Optional[str]: The winning player or None, if there is no winner.
         """
+        if self._winner:
+            return self._winner
+
+        if self._o_count < self._size and self._x_count < self._size:
+            return None
+
+        # Check rows and columns simultaneously
+        for i in range(self._size):
+            if self._board[i][0] and all(self._board[i][j] == self._board[i][0] for j in range(1, self._size)):
+                return Player(self._board[i][0])
+            if self._board[0][i] and all(self._board[j][i] == self._board[0][i] for j in range(1, self._size)):
+                return Player(self._board[0][i])
+
+        # Check diagonals
+        if self._board[0][0] and all(self._board[i][i] == self._board[0][0] for i in range(1, self._size)):
+            return Player(self._board[0][0])
+        if self._board[0][self._size-1] and all(self._board[i][self._size-1-i] == self._board[0][self._size-1] for i in range(1, self._size)):
+            return Player(self._board[0][self._size-1])
+
+        return None
     
     # ==========================================================================
     # Properties

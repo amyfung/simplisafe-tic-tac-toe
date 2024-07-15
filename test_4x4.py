@@ -239,7 +239,6 @@ class TestTicTacToe4x4(unittest.TestCase):
             (3, 3),
         ]
         self._play_moves(moves, alternate=True)
-        self.game.print_board()
         self.assertIsNone(self.game.winner, "There should be no winner in a draw")
         self.assertTrue(self.game.is_game_over(), "Game should be over in a draw")
         self.assertEqual(
