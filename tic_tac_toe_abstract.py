@@ -20,9 +20,8 @@ class TicTacToeAbstract(ABC):
     move validation, and basic game state tracking.
 
     Attributes:
-        size (int): The size of the game board (e.g., 3 for a 3x3 board).
-        initial_state (Optional[List[List[str]]]): The initial state of the board.
-        current_player (Player): The player whose turn it is.
+        _size (int): The size of the game board (e.g., 3 for a 3x3 board).
+        _current_player (Player): The player whose turn it is.
         _board (List[List[str]]): The current state of the game board.
         _empty_cells (Set[Tuple[int, int]]): Set of empty cell coordinates.
         _x_count (int): The number of X symbols on the board.
