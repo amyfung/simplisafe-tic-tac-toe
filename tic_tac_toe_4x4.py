@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union
 from enums import Player
 from tic_tac_toe_abstract import TicTacToeAbstract
 
@@ -26,51 +26,37 @@ class TicTacToe4x4(TicTacToeAbstract):
         self._corners = [(0, 0), (0, 3), (3, 0), (3, 3)]
         super().__init__(4, initial_state, current_player)
 
-    def check_winner(self) -> Optional[Player]:
+    
+    def _check_additional_winning_conditions(self, row: Optional[int] = None, col: Optional[int] = None) -> Optional[Union[Player, bool]]:
         """
-        Check if there is a winner based on the 4x4 game rules.
+        Check for additional winning conditions specific to 4x4 board.
 
-        Returns:
-            Optional[Player]: The winning player (Player.X or Player.O) or None if there is no winner.
-        """
-        # Check standard winning conditions (rows, columns, main diagonals)
-        standard_winner = super().check_winner()
-        if standard_winner:
-            return standard_winner
-        
-        # Check corners
-        corner_value = self._board[self._corners[0][0]][self._corners[0][1]]
-        if corner_value and all(self._board[r][c] == corner_value for r, c in self._corners):
-            return Player(corner_value)
-        
-        # Check 2x2 boxes
-        return self._find_2x2_winner()
-
-    def is_winning_move(self, row: int, col: int) -> bool:
-        """
-        Check whether the last move resulted in a win based on 4x4 game rules.
-        
         Args:
-            row (int): The row index for the move.
-            col (int): The column index for the move.
-        
+            row (Optional[int]): The row index for the move (if checking a specific move).
+            col (Optional[int]): The column index for the move (if checking a specific move).
+
         Returns:
-            bool: True if the move resulted in a win, False otherwise.
+            Optional[Union[Player, bool]]: 
+                - If row and col are provided: True if the move resulted in a win, False otherwise.
+                - If row and col are not provided: The winning Player if found, None otherwise.
         """
-        # Check standard winning conditions
-        if super().is_winning_move(row, col):
-            return True
-        
-        player_count = self._x_count if self.current_player == Player.X else self._o_count
-        if player_count < self.size:
-            return False
-        
-        # Check corners
-        if (row, col) in self._corners and all(self._board[r][c] == self.current_player.value for r, c in self._corners):
-            return True
-        
-        # Check 2x2 boxes
-        return self._is_winning_2x2_move(row, col)
+        if row is not None and col is not None:
+            # Checking for a specific move (is_winning_move)
+            # Check corners
+            if (row, col) in self._corners and all(self._board[r][c] == self.current_player.value for r, c in self._corners):
+                return True
+            
+            # Check 2x2 boxes
+            return self._is_winning_2x2_move(row, col)
+        else:
+            # Checking the entire board (check_winner)
+            # Check corners
+            corner_value = self._board[self._corners[0][0]][self._corners[0][1]]
+            if corner_value and all(self._board[r][c] == corner_value for r, c in self._corners):
+                return Player(corner_value)
+            
+            # Check 2x2 boxes
+            return self._find_2x2_winner()
 
     def _find_2x2_winner(self) -> Optional[Player]:
         """

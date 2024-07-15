@@ -8,7 +8,7 @@ Tic-Tac-Toe game variants of different sizes and winning conditions.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Set
+from typing import List, Optional, Tuple, Set, Union
 from enums import Player, GameState
 
 
@@ -30,8 +30,8 @@ class TicTacToeAbstract(ABC):
         _winner (Optional[Player]): The winner of the game, if any.
 
     Abstract Methods:
-        is_winning_move(row: int, col: int) -> bool
-        check_winner() -> Optional[Player]
+        check_additional_winning_conditions(row: Optional[int] = None, 
+            col: Optional[int] = None) -> Optional[Union[Player, bool]]:
     """
 
     # ==========================================================================
@@ -214,7 +214,7 @@ class TicTacToeAbstract(ABC):
         )
 
     # ==========================================================================
-    # Solver methods that check the game state
+    # Checking general game state
     # ==========================================================================
     def is_game_over(self) -> bool:
         """
@@ -251,29 +251,29 @@ class TicTacToeAbstract(ABC):
             bool: True if there are moves left, False otherwise.
         """
         return self.valid_moves
-    
+
     # ==========================================================================
     # Checking winning
     # ==========================================================================
-    @abstractmethod
     def is_winning_move(self, row: int, col: int) -> bool:
         """
-        Check whether the last move resulted in a win. Additional winning
-        conditions should be implemented by subclasses, if applicable.
+        Check whether the last move resulted in a win.
 
         Args:
             row (int): The row index for the move.
             col (int): The column index for the move.
 
         Returns:
-            bool: True if the move resulted in a win or False otherwise.
+            bool: True if the move resulted in a win, False otherwise.
         """
-        # Too few moves on the board to meet any win condition
-        player_count = self._x_count if self.current_player == Player.X else self._o_count
+        # Too few moves to satisfy any win condition
+        player_count = (
+            self._x_count if self.current_player == Player.X else self._o_count
+        )
         if player_count < self.size:
             return False
 
-        player = self._current_player.value
+        player = self.current_player.value
 
         # Check row
         if all(self._board[row][i] == player for i in range(self.size)):
@@ -292,50 +292,69 @@ class TicTacToeAbstract(ABC):
             if main_diag == self._size or anti_diag == self._size:
                 return True
 
-        return False
+        # Check additional winning conditions
+        return self._check_additional_winning_conditions(row, col)
 
-    @abstractmethod
     def check_winner(self) -> Optional[Player]:
         """
-        Checks whether there is a winner of the tic-tac-toe game based on the
-        horizontal, vertical, and diagonal win conditions. Returns the winner,
-        if any, or None.
-
-        Additional winning conditions should be implemented by subclasses,
-        if applicable.
+        Check if there is a winner based on the current board state.
 
         Returns:
-            Optional[str]: The winning player or None, if there is no winner.
+            Optional[Player]: The winning player (Player.X or Player.O) or None if there is no winner.
         """
         if self._winner:
             return self._winner
 
-        if self._o_count < self._size and self._x_count < self._size:
+        if self._o_count < self.size and self._x_count < self.size:
             return None
 
-        # Check rows and columns simultaneously
-        for i in range(self._size):
-            if self._board[i][0] and all(
-                self._board[i][j] == self._board[i][0] for j in range(1, self._size)
+        # Check rows
+        for row in range(self._size):
+            if self._board[row][0] and all(
+                self._board[row][i] == self._board[row][0] for i in range(1, self._size)
             ):
-                return Player(self._board[i][0])
-            if self._board[0][i] and all(
-                self._board[j][i] == self._board[0][i] for j in range(1, self._size)
-            ):
-                return Player(self._board[0][i])
+                return Player(self._board[row][0])
 
-        # Check diagonals
+        # Check columns
+        for col in range(self._size):
+            if self._board[0][col] and all(
+                self._board[i][col] == self._board[0][col] for i in range(1, self._size)
+            ):
+                return Player(self._board[0][col])
+
+        # Check main diagonal
         if self._board[0][0] and all(
             self._board[i][i] == self._board[0][0] for i in range(1, self._size)
         ):
             return Player(self._board[0][0])
+
+        # Check anti-diagonal
         if self._board[0][self._size - 1] and all(
             self._board[i][self._size - 1 - i] == self._board[0][self._size - 1]
             for i in range(1, self._size)
         ):
             return Player(self._board[0][self._size - 1])
 
-        return None
+        # Check additional winning conditions
+        return self._check_additional_winning_conditions()
+
+    @abstractmethod
+    def _check_additional_winning_conditions(
+        self, row: Optional[int] = None, col: Optional[int] = None
+    ) -> Optional[Union[Player, bool]]:
+        """
+        Check for additional winning conditions specific to the board type.
+
+        Args:
+            row (Optional[int]): The row index for the move (if checking a specific move).
+            col (Optional[int]): The column index for the move (if checking a specific move).
+
+        Returns:
+            Optional[Union[Player, bool]]:
+                - If row and col are provided: True if the move resulted in a win, False otherwise.
+                - If row and col are not provided: The winning Player if found, None otherwise.
+        """
+        pass
 
     # ==========================================================================
     # Properties
@@ -376,7 +395,7 @@ class TicTacToeAbstract(ABC):
         Get the winner of the game.
 
         Returns:
-            Optional[Player]: The winner (Player.X or Player.O) or None if there 
+            Optional[Player]: The winner (Player.X or Player.O) or None if there
                 is no winner yet.
         """
         return self._winner
