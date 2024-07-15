@@ -185,7 +185,6 @@ class TicTacToeAbstract(ABC):
             bool: True if the move is valid, False otherwise.
         """
         return ((row, col) in self._empty_cells)
-        
 
     # ==========================================================================
     # Solver methods that check the game state
@@ -198,7 +197,7 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if the game is over, False otherwise.
         """
-        
+        return bool(self._winner) or not self.any_moves_left()
 
     def get_game_state(self) -> GameState:
         """
@@ -207,7 +206,13 @@ class TicTacToeAbstract(ABC):
         Returns:
             GameState: The current state of the game.
         """
-        
+        if self._winner == Player.X:
+            return GameState.X_WINS
+        elif self._winner == Player.O:
+            return GameState.O_WINS
+        elif self._o_count + self._x_count == self._size**2:
+            return GameState.DRAW
+        return GameState.ONGOING
 
     def any_moves_left(self) -> bool:
         """
@@ -219,6 +224,7 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if there are moves left, False otherwise.
         """
+        # return not self._valid_moves
         return (self._o_count + self._x_count) < self._size ** 2
     
     # ==========================================================================
