@@ -311,6 +311,21 @@ class TestTicTacToe4x4(unittest.TestCase):
                 GameState.X_WINS,
                 f"Game state should be X_WINS with moves {condition}",
             )
+            
+    # ==========================================================================
+    # Display tests
+    # ==========================================================================
+    def test_str_representation(self):
+        """Test string representation of the board."""
+        print("Testing string representation of the board")
+        self.game.make_move(0, 0)
+        expected = "|X|_|_|_|\n|_|_|_|_|\n|_|_|_|_|\n|_|_|_|_|"
+        self.assertEqual(
+            str(self.game),
+            expected,
+            "String representation should match expected format",
+        )
+        
     # ==========================================================================
     # Helper methods
     # ==========================================================================
