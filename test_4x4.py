@@ -335,7 +335,7 @@ class TestTicTacToe4x4(unittest.TestCase):
             self.game.make_move(row, col)
             if not alternate:
                 self.game._pass_turn()
-            self.game.print_board()
+            #self.game.print_board()
 
 
 if __name__ == "__main__":

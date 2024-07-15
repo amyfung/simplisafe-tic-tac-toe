@@ -250,7 +250,7 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if there are moves left, False otherwise.
         """
-        return not self._valid_moves
+        return self.valid_moves
     
     # ==========================================================================
     # Checking winning
@@ -269,7 +269,8 @@ class TicTacToeAbstract(ABC):
             bool: True if the move resulted in a win or False otherwise.
         """
         # Too few moves on the board to meet any win condition
-        if self._o_count < self._size and self._x_count < self._size:
+        player_count = self._x_count if self.current_player == Player.X else self._o_count
+        if player_count < self.size:
             return False
 
         player = self._current_player.value
