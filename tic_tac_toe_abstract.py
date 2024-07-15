@@ -141,7 +141,24 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if the move was valid and made, False otherwise.
         """
+        if not self._is_valid_move(row, col):
+            return False
+
+        self._board[row][col] = self._current_player.value
+        self._empty_cells.remove((row, col))
         
+        if self._current_player == Player.X:
+            self._x_count += 1
+        else:
+            self._o_count += 1
+
+        if self.is_winning_move(row, col):
+            self._winner = self._current_player
+
+        self._current_player = (
+            Player.O if self._current_player == Player.X else Player.X
+        )
+        return True
 
     def is_valid_move(self, row: int, col: int) -> bool:
         """
@@ -154,6 +171,7 @@ class TicTacToeAbstract(ABC):
         Returns:
             bool: True if the move is valid, False otherwise.
         """
+        return ((row, col) in self._empty_cells)
         
 
     # ==========================================================================
