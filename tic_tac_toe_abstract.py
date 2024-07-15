@@ -9,10 +9,8 @@ Tic-Tac-Toe game variants of different sizes and winning conditions.
 
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Set
-from dataclasses import dataclass, field
 from enums import Player, GameState
 
-@dataclass
 class TicTacToeAbstract(ABC):
     """
     An abstract base class representing a Tic-Tac-Toe game board.
@@ -35,92 +33,69 @@ class TicTacToeAbstract(ABC):
         is_winning_move(row: int, col: int) -> bool
         check_winner() -> Optional[Player]
     """
-    size: int
-    initial_state: Optional[List[List[str]]] = None
-    current_player: Optional[Player] = Player.X
-    _board: List[List[str]] = field(init=False)
-    _empty_cells: Set[Tuple[int, int]] = field(init=False)
-    _x_count: int = field(init=False, default=0)
-    _o_count: int = field(init=False, default=0)
-    _winner: Optional[Player] = field(init=False, default=None)
-
+    
     # ==========================================================================
     # Initializing the board
     # ==========================================================================
-    def __post_init__(self):
-        """
-        Initialize the game board after the object is created.
-
-        This method is automatically called after the object is instantiated.
-        It sets up the game board based on the provided initial state or
-        creates a new empty board if no initial state is provided.
-
-        Raises:
-            ValueError: If the board size is less than 3x3.
-        """
-        if self.size < 3:
+    def __init__(self, size: int, initial_state: Optional[List[List[str]]] = None, current_player: Optional[Player] = None):
+        if size < 3:
             raise ValueError("Board size must be at least 3x3")
         
-        if self.initial_state:
-            self._initialize_from_state()
-        else:
+        self._size = size
+        self._board: List[List[str]]
+        self._empty_cells: Set[Tuple[int, int]]
+        self._winner: Optional[Player] = None
+
+        if not initial_state:
             self._initialize_new_board()
+            self._current_player = (
+                Player.X if current_player is None else current_player
+            )
+        else:
+            self._initialize_from_state(initial_state, current_player)
 
     def _initialize_new_board(self) -> None:
-        """
-        Initialize a new empty game board.
+        self._board = [[''] * self._size for _ in range(self._size)]
+        print("board:", self._board)
+        self._x_count: int = 0
+        self._o_count: int = 0
+        self._empty_cells = {(r, c) for r in range(self._size) for c in range(self._size)}
 
-        This method creates an empty board of the specified size and
-        initializes the set of empty cells.
-        """
-        # Create an empty board
-        self._board = [["" for _ in range(self.size)] for _ in range(self.size)]
-        # Initialize the set of empty cells with all board positions
-        self._empty_cells = {(r, c) for r in range(self.size) for c in range(self.size)}
-
-    def _initialize_from_state(self) -> None:
-        """
-        Initialize the game board from a given initial state.
-
-        This method sets up the board based on the provided initial state,
-        validates the state, and initializes game counters and the current player.
-
-        Raises:
-            ValueError: If the initial board state is invalid.
-        """
-        if not self._is_valid_board():
+    def _initialize_from_state(self, initial_state: List[List[str]], current_player: Optional[Player]) -> None:
+        if not self._is_valid_board(initial_state):
             raise ValueError("Invalid initial board state")
 
-        self._board = self.initial_state
-        # Identify empty cells from the initial state
-        self._empty_cells = {(r, c) for r in range(self.size) for c in range(self.size) if not self._board[r][c]}
-        self._x_count, self._o_count = self._count_moves()
+        self._board = initial_state
+        self._empty_cells = {(r, c) for r in range(self._size) for c in range(self._size) if not initial_state[r][c]}
+        self._x_count, self._o_count = self._count_moves(self._board)
         
-        # Determine the current player if not specified
-        if not self.current_player:
-            self.current_player = Player.X if self._x_count <= self._o_count else Player.O
-        elif (self.current_player == Player.X and self._x_count > self._o_count) or \
-             (self.current_player == Player.O and self._o_count > self._x_count):
+        if current_player is None:
+            self._current_player = Player.X if self._x_count <= self._o_count else Player.O
+        elif (current_player == Player.X and self._x_count > self._o_count) or \
+             (current_player == Player.O and self._o_count > self._x_count):
             raise ValueError("Provided current player is inconsistent with the board state")
+        else:
+            self._current_player = current_player
 
         self._winner = self.check_winner()
 
-    def _is_valid_board(self) -> bool:
+
+    def _is_valid_board(self, state) -> bool:
         """
-        Check if the initial board state is valid.
+        Check if the board state is valid.
 
         Returns:
             bool: True if the board state is valid, False otherwis\e.
         """
         # Check board dimensions
-        if len(self.initial_state) != self.size or any(len(row) != self.size for row in self.initial_state):
+        if len(state) != self.size or any(len(row) != self.size for row in state):
             return False
 
         # Count moves and check for validity
-        x_count, o_count = self._count_moves()
+        x_count, o_count = self._count_moves(state)
         return x_count and abs(x_count - o_count) <= 1
 
-    def _count_moves(self) -> Tuple[Optional[int], Optional[int]]:
+    def _count_moves(self, board) -> Tuple[Optional[int], Optional[int]]:
         """
         Count the number of moves made by each player.
 
@@ -129,7 +104,7 @@ class TicTacToeAbstract(ABC):
                 Returns (None, None) if an invalid symbol is found on the board.
         """
         x_count = o_count = 0
-        for row in self._board:
+        for row in board:
             for cell in row:
                 if cell == Player.X.value:
                     x_count += 1
@@ -246,7 +221,26 @@ class TicTacToeAbstract(ABC):
     # ==========================================================================
     # Properties
     # ==========================================================================
+    @property
+    def size(self) -> int:
+        """
+        Get the size of the board.
 
+        Returns:
+            int: The size of the board.
+        """
+        return self._size
+    
+    @property
+    def current_player(self) -> Player:
+        """
+        Get the current player.
+
+        Returns:
+            Player: The current player (Player.X or Player.O).
+        """
+        return self._current_player
+    
     @property
     def valid_moves(self) -> List[Tuple[int, int]]:
         """
